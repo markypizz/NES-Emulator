@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include "6502.hpp"
-
+#include <map>
 // Forward declare Bus
 class Bus;
 
@@ -32,7 +32,7 @@ public:
         I = 0b00000100, // IRQ Disable
         D = 0b00001000, // Decimal mode ** not used **
         B = 0b00010000, // BRK command
-        //  0b00100000, // Unused
+        U = 0b00100000, // Unused
         O = 0b01000000, // Overflow
         N = 0b10000000, // Negative
     };
@@ -140,6 +140,21 @@ public:
      */
     void nmi();
 
+    /**
+     * @brief Dissasemble function
+     * @note Code from https://github.com/OneLoneCoder/olcNES/blob/master/Part%232%20-%20CPU/olc6502.cpp
+     */
+    std::map<uint16_t, std::string> disassemble(uint16_t nStart, uint16_t nStop);
+
+    //----------------------
+    // Constants
+    //----------------------
+    static constexpr uint16_t STACK_BASE = 0x0100;
+    static constexpr uint16_t STACK_DEFAULT = 0x00FD;
+    static constexpr uint16_t P_DEFAULT = (0x00 | STATUS_FLAG::U);
+    static constexpr uint16_t PC_DEFAULT = 0xFFFC;
+    static constexpr uint16_t INT_TARGET_ADDR = 0xFFFE;
+
     //----------------------
     // Data Section
     //----------------------
@@ -241,6 +256,12 @@ private:
      * @param h HIGH/LOW
      */
     void setFlag(STATUS_FLAG flag, bool h);
-
-
 };
+
+// Other useful helper functions
+template <typename T>
+inline static bool is8BitNeg(T data)
+{
+    T compare = 0x80;
+    return (data & compare);
+}
